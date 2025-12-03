@@ -5,8 +5,8 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'mastern',
-                    credentialsId: 'github-creds',
+                git branch: 'master',
+                    credentialsId: 'megak-ops',
                     url: 'https://github.com/megak-ops/flask-ci-cd-demo.git'
             }
         }
