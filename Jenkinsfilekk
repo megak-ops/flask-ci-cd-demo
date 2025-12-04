@@ -1,0 +1,95 @@
+pipeline {
+    agent any
+
+    options {
+        skipStagesAfterUnstable()
+        timestamps()
+    }
+
+    environment {
+        POETRY_HOME = "${HOME}/.local/bin"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'master',
+                    credentialsId: 'megak-ops',
+                    url: 'https://github.com/megak-ops/flask-ci-cd-demo.git'
+            }
+        }
+
+        stage('Setup Python Environment') {
+    steps {
+        sh '''
+            curl -sSL https://install.python-poetry.org | python3 -
+            export PATH="$HOME/.local/bin:$PATH"
+            echo "Using poetry from: $(which poetry || echo 'not found')"
+            $HOME/.local/bin/poetry --version
+        '''
+    }
+}
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    $HOME/.local/bin/poetry install
+                '''
+            }
+        }
+
+        stage('Code Quality (Lint)') {
+            steps {
+                sh '''
+                    $HOME/.local/bin/poetry run flake8 || true
+                '''
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh '''
+                    $HOME/.local/bin/poetry run pytest --junitxml=test-results.xml
+                '''
+            }
+            post {
+                always {
+                    junit 'test-results.xml'
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                sh '''
+                    $HOME/.local/bin/poetry run bandit -r . || true
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build -t flask-ci-demo .
+                '''
+            }
+        }
+
+        stage('Push Image to DockerHub') {
+            steps {
+                sh '''
+                    echo "TODO: docker login && docker push"
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    echo "TODO: docker compose up -d"
+                '''
+            }
+        }
+    }
+}
