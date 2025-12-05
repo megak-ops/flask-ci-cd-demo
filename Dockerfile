@@ -1,22 +1,19 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install system deps
+# Install curl
 RUN apt-get update && apt-get install -y curl
 
-# Install poetry
+# Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
-
 ENV PATH="/root/.local/bin:$PATH"
 
-# Copy everything
+# Disable virtualenv inside Docker
+RUN poetry config virtualenvs.create false
+
 COPY . .
 
-# Install dependencies
 RUN poetry install --no-interaction --no-ansi
 
-EXPOSE 5000
-
-
-CMD ["poetry", "run", "python", "app.py"]
+CMD ["python", "app.py"]
