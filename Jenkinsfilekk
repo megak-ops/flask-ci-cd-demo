@@ -79,7 +79,9 @@ pipeline {
                     docker stop flask-app-prod || true
                     docker rm flask-app-prod || true
                     docker run -d --name flask-app-prod -p 80:5000 $DOCKERHUB_USER/flask-ci-demo:latest
-                '''
+                        '''
+                    }
+                }
             }
         }
     }
