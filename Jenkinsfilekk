@@ -59,8 +59,8 @@ pipeline {
                                                  passwordVariable: 'DOCKERHUB_PASS')]) {
                     sh '''
                         echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-                        docker tag flask-ci-demo $DOCKERHUB_USER/flask-ci-demo:latest
-                        docker push $DOCKERHUB_USER/flask-ci-demo:latest || true
+                        docker tag flask-ci-demo ${DOCKERHUB_USER}/flask-ci-demo:latest
+                        docker push ${DOCKERHUB_USER}/flask-ci-demo:latest || true
                     '''
                 }
             }
