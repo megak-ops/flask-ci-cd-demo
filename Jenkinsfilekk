@@ -2,6 +2,14 @@ pipeline {
     
     agent any
 
+    parameters {
+    choice(
+        name: 'ENV',
+        choices: ['dev', 'prod'],
+        description: 'Choose environment'
+    )
+}
+
     environment {
         PATH = "${HOME}/.local/bin:${env.PATH}"
     }
