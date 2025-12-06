@@ -64,7 +64,9 @@ pipeline {
 
         stage('Push Image to DockerHub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
+                                                 usernameVariable: 'DOCKERHUB_USER', 
+                                                 passwordVariable: 'DOCKERHUB_PASS')]) {
                     sh '''
                         echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
                         docker tag flask-ci-demo $DOCKERHUB_USER/flask-ci-demo:latest
@@ -93,6 +95,5 @@ pipeline {
                 }
             }
         }
-
     }
 }
