@@ -23,4 +23,4 @@ COPY . .
 RUN poetry install --no-interaction --no-ansi
 
 # أمر تشغيل التطبيق
-CMD ["python", "flask_ci_cd/app.py"]
+CMD ["python", "app.py"]
