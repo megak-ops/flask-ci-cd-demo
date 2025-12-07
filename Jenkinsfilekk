@@ -59,11 +59,9 @@ pipeline {
                                                  passwordVariable: 'DOCKERHUB_PASS')]) {
                     script {
                         def TAG = params.ENV
-                        sh """
-                            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                            sh "echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin"
                             docker tag flask-ci-demo $DOCKERHUB_USER/flask-ci-demo:$TAG
                             docker push $DOCKERHUB_USER/flask-ci-demo:$TAG
-                        """
                     }
                 }
             }
@@ -75,8 +73,8 @@ pipeline {
                     echo "Deploying with TAG=${TAG} ..."
                     sh """
                         export TAG=${TAG}
-                        docker compose -f docker-compose.yml down || true
-                        docker compose -f docker-compose.yml up -d
+                        docker -compose -f docker-compose.yml down || true
+                        docker -compose -f docker-compose.yml up -d
                     """
                 }
             }
