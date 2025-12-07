@@ -34,7 +34,7 @@ pipeline {
         }
         stage('Lint') {
             steps {
-                sh 'poetry run flake8 || true' // لو flake8 مش موجود مش يقف الpipeline
+                sh 'poetry run flake8 || true' // true عشان لو flake8 غايب ما يبطل pipeline
             }
         }
         stage('Unit Tests') {
@@ -52,26 +52,36 @@ pipeline {
                 sh 'docker build -t flask-ci-demo .'
             }
         }
-      stage('Push Image to DockerHub') {
+        stage('Push Image to DockerHub') {
     steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
                                          usernameVariable: 'DOCKERHUB_USER',
                                          passwordVariable: 'DOCKERHUB_PASS')]) {
-            sh '''
-                echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-                docker tag flask-ci-demo $DOCKERHUB_USER/flask-ci-demo:$ENV
-                docker push $DOCKERHUB_USER/flask-ci-demo:$ENV
-            '''
+            script {
+                def TAG = params.ENV
+                sh """
+                    echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                    docker tag flask-ci-demo ${DOCKERHUB_USER}/flask-ci-demo:${TAG}
+                    docker push ${DOCKERHUB_USER}/flask-ci-demo:${TAG}
+                """
+            }
         }
     }
 }
-
-stage('Deploy with Compose') {
+      stage('Deploy with Compose') {
     steps {
-        echo "Deploying with TAG=${ENV} ..."
-        sh '''
-            docker-compose -f docker-compose.yml down || true
-            docker-compose -f docker-compose.yml up -d
-        '''
+        script {
+            def TAG = ""
+            if (params.ENV == "dev")      TAG = "dev"
+            if (params.ENV == "staging")  TAG = "staging"
+            if (params.ENV == "prod")     TAG = "prod"
+
+            sh """
+                echo "Deploying with TAG=${TAG} ..."
+                export TAG=${TAG}
+                docker-compose -f docker-compose.yml down || true
+                docker-compose -f docker-compose.yml up -d
+            """
+        }
     }
 }
