@@ -52,37 +52,37 @@ pipeline {
                 sh 'docker build -t flask-ci-demo .'
             }
         }
-        stage('Push Image to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
-                                                 usernameVariable: 'DOCKERHUB_USER', 
-                                                 passwordVariable: 'DOCKERHUB_PASS')]) {
-                    sh '''
-                        echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-                        docker tag flask-ci-demo ${DOCKERHUB_USER}/flask-ci-demo:latest
-                        docker push ${DOCKERHUB_USER}/flask-ci-demo:latest || true
-                    '''
-                }
+       stage('Push Image to DockerHub') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                         usernameVariable: 'DOCKERHUB_USER',
+                                         passwordVariable: 'DOCKERHUB_PASS')]) {
+            script {
+                def TAG = params.ENV
+                sh """
+                    echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                    docker tag flask-ci-demo ${DOCKERHUB_USER}flask-ci-demo:${TAG}
+                    docker push ${DOCKERHUB_USER}flask-ci-demo:${TAG}
+                """
             }
         }
-        stage('Deploy') {
+    }
+}
+
+        stage('Deploy with Compose') {
     steps {
         script {
-            if (params.ENV == 'dev') {
-                sh '''
-                    docker stop flask-app-dev || true
-                    docker rm flask-app-dev || true
-                    docker run -d --name flask-app-dev -p 4000:5000 ${DOCKERHUB_USER}flask-ci-demo:latest
-                '''
-            } else {
-                sh '''
-                    docker stop flask-app-prod || true
-                    docker rm flask-app-prod || true
-                    docker run -d --name flask-app-prod -p 80:5000 ${DOCKERHUB_USER}flask-ci-demo:latest
-                        '''
-                    }
-                }
-            }
+            def TAG = ""
+            if (params.ENV == "dev")      TAG = "dev"
+            if (params.ENV == "staging")  TAG = "staging"
+            if (params.ENV == "prod")     TAG = "prod"
+
+            sh """
+                echo "Deploying with TAG=${TAG} ..."
+                export TAG=${TAG}
+                docker compose -f docker-compose.yml down || true
+                docker compose -f docker-compose.yml up -d
+            """
         }
     }
 }
