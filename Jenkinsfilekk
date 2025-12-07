@@ -59,9 +59,9 @@ pipeline {
                                                  passwordVariable: 'DOCKERHUB_PASS')]) {
                     script {
                         def TAG = params.ENV
-                            sh "echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin"
-                            docker tag flask-ci-demo $DOCKERHUB_USER/flask-ci-demo:$TAG
-                            docker push $DOCKERHUB_USER/flask-ci-demo:$TAG
+                            sh 'echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin'
+                            docker "tag flask-ci-demo $DOCKERHUB_USER/flask-ci-demo:$TAG"
+                            docker "push $DOCKERHUB_USER/flask-ci-demo:$TAG"
                     }
                 }
             }
